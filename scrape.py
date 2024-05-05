@@ -11,9 +11,8 @@ from scipy.stats import randint
 from sklearn import preprocessing
 import re
 import numpy as np
-scraped_data = nfl.import_combine_data([2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023])
+scraped_data = pd.DataFrame(nfl.import_combine_data([2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023]))
 scraped_data = scraped_data[['draft_year', 'draft_ovr', 'player_name','ht','wt','forty','bench','vertical','broad_jump']]
-print(scraped_data.info())
 draft = [] # tell whether or not someone was drafted (target value)
 for row in scraped_data.itertuples(index=True):
    if (np.isnan(row.draft_ovr)):
@@ -21,4 +20,13 @@ for row in scraped_data.itertuples(index=True):
    else :
         draft.append(True)
 scraped_data['drafted'] = draft
-print(scraped_data.tail())
+print(scraped_data)
+X = scraped_data.iloc[:,5:9]
+y = scraped_data.iloc[:,-1]
+X.dropna(inplace=True)
+y = y[y.index.isin(X.index)]
+clf = DecisionTreeClassifier()
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+print(cross_val_score(clf,X_train,y_train,cv=7))
+clf.fit(X_train, y_train)
+print(metrics.accuracy_score(y_train, clf.predict(X_train)))
