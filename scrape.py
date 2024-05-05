@@ -19,14 +19,26 @@ for row in scraped_data.itertuples(index=True):
         draft.append(False)
    else :
         draft.append(True)
+for row in range(len(scraped_data['ht'])):
+     height_str = scraped_data['ht'].get(row)
+     print(height_str)
 scraped_data['drafted'] = draft
 print(scraped_data)
-X = scraped_data.iloc[:,5:9]
+X = scraped_data.iloc[:,4:9]
 y = scraped_data.iloc[:,-1]
 X.dropna(inplace=True)
 y = y[y.index.isin(X.index)]
-clf = DecisionTreeClassifier()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
-print(cross_val_score(clf,X_train,y_train,cv=7))
+X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.2)
+clf = DecisionTreeClassifier()
+print(cross_val_score(clf, X_train, y_train, cv=7))
 clf.fit(X_train, y_train)
-print(metrics.accuracy_score(y_train, clf.predict(X_train)))
+print(metrics.accuracy_score(y_valid, clf.predict(X_valid)))
+print(clf.feature_importances_)
+def sortSecond(val):
+     return val[1]
+values = clf.feature_importances_
+features = list(X)
+importances = [(features[i], values[i]) for i in range(len(features))]
+importances.sort(reverse=True, key=sortSecond)
+print(importances)
