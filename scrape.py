@@ -24,7 +24,7 @@ for row in range(len(scraped_data['ht'])):
      print(height_str)
 scraped_data['drafted'] = draft
 print(scraped_data)
-X = scraped_data.iloc[:,4:9]
+X = scraped_data.iloc[:,5:9]
 y = scraped_data.iloc[:,-1]
 X.dropna(inplace=True)
 y = y[y.index.isin(X.index)]
@@ -42,3 +42,9 @@ features = list(X)
 importances = [(features[i], values[i]) for i in range(len(features))]
 importances.sort(reverse=True, key=sortSecond)
 print(importances)
+DecisionTreeClassifier(class_weight=None, criterion='gini', max_depth=None,
+ max_features=None, max_leaf_nodes=None,
+ min_impurity_decrease=0.0, min_impurity_split=None,
+ min_samples_leaf=1, min_samples_split=2,
+ min_weight_fraction_leaf=0.0, presort=False,
+ random_state=None, splitter='best')
