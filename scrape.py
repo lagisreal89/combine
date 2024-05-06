@@ -44,7 +44,22 @@ importances.sort(reverse=True, key=sortSecond)
 print(importances)
 DecisionTreeClassifier(class_weight=None, criterion='gini', max_depth=None,
  max_features=None, max_leaf_nodes=None,
- min_impurity_decrease=0.0, min_impurity_split=None,
+ min_impurity_decrease=0.0,
  min_samples_leaf=1, min_samples_split=2,
- min_weight_fraction_leaf=0.0, presort=False,
+ min_weight_fraction_leaf=0.0,
  random_state=None, splitter='best')
+print(metrics.accuracy_score(y_valid, clf.predict(X_valid)))
+params_dist = {
+'criterion': ['gini', 'entropy'],
+'max_depth': randint(low=4, high=40),
+'max_leaf_nodes': randint(low=1000, high=20000),
+'min_samples_leaf': randint(low=20, high=100),
+'min_samples_split': randint(low=40, high=200)
+}
+clf_tuned = DecisionTreeClassifier(random_state=42)
+random_search = RandomizedSearchCV(clf_tuned, params_dist, cv=7)
+random_search.fit(X_train, y_train)
+print(random_search.best_estimator_)
+best_tuned_clf = random_search.best_estimator_
+print(metrics.accuracy_score(y_valid, best_tuned_clf.predict(X_valid)))
+
