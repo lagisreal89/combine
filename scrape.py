@@ -3,7 +3,7 @@ import pandas as pd
 import sklearn
 from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import AdaBoostClassifier
+from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn import metrics
 from sklearn.tree import export_graphviz
@@ -29,6 +29,7 @@ X = scraped_data.iloc[:,5:9]
 y = scraped_data.iloc[:,-1]
 X.dropna(inplace=True)
 y = y[y.index.isin(X.index)]
+print(y.value_counts())
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.2)
 clf = DecisionTreeClassifier()
@@ -64,6 +65,34 @@ print(random_search.best_estimator_)
 best_tuned_clf = random_search.best_estimator_
 print(metrics.accuracy_score(y_valid, best_tuned_clf.predict(X_valid)))
 clf = AdaBoostClassifier(algorithm="SAMME", random_state=0)
-print(cross_val_score(clf, X_train, y_train, cv=7))
+print(cross_val_score(clf, X_train, y_train, cv=10))
 clf.fit(X_train, y_train)
 print(metrics.accuracy_score(y_valid, clf.predict(X_valid)))
+params_dist = {
+     'algorithm' : ['SAMME','SAMME.R'],
+     'n_estimators' : randint(low=1, high=100),
+     'learning_rate': randint(low=1,high=100)
+}
+clf_tuned = AdaBoostClassifier(random_state = 42)
+random_search = RandomizedSearchCV(clf_tuned, params_dist, cv=7)
+random_search.fit(X_train, y_train)
+print(random_search.best_estimator_)
+best_tuned_clf = random_search.best_estimator_
+print(metrics.accuracy_score(y_valid, best_tuned_clf.predict(X_valid)))
+clf = RandomForestClassifier()
+print(cross_val_score(clf, X_train, y_train, cv=10))
+clf.fit(X_train, y_train)
+print(metrics.accuracy_score(y_valid, clf.predict(X_valid)))
+params_dist = {
+'criterion': ['gini', 'entropy','log_loss'],
+'max_depth': randint(low=4, high=40),
+'max_leaf_nodes': randint(low=1000, high=20000),
+'min_samples_leaf': randint(low=20, high=100),
+'min_samples_split': randint(low=40, high=200)
+}
+clf_tuned = RandomForestClassifier(random_state=42)
+random_search = RandomizedSearchCV(clf_tuned, params_dist, cv=7)
+random_search.fit(X_train, y_train)
+print(random_search.best_estimator_)
+best_tuned_clf = random_search.best_estimator_
+print(metrics.accuracy_score(y_valid, best_tuned_clf.predict(X_valid)))
