@@ -15,6 +15,7 @@ import numpy as np
 scraped_data = pd.DataFrame(nfl.import_combine_data([2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023]))
 scraped_data = scraped_data[['draft_year', 'draft_ovr', 'player_name','ht','wt','forty','bench','vertical','broad_jump']]
 draft = [] # tell whether or not someone was drafted (target value)
+print(scraped_data)
 for row in scraped_data.itertuples(index=True):
    if (np.isnan(row.draft_ovr)):
         draft.append(False)
@@ -22,7 +23,6 @@ for row in scraped_data.itertuples(index=True):
         draft.append(True)
 for row in range(len(scraped_data['ht'])):
      height_str = scraped_data['ht'].get(row)
-     print(height_str)
 scraped_data['drafted'] = draft
 print(scraped_data)
 X = scraped_data.iloc[:,5:9]
