@@ -63,7 +63,7 @@ random_search.fit(X_train, y_train)
 print(random_search.best_estimator_)
 best_tuned_clf = random_search.best_estimator_
 print(metrics.accuracy_score(y_valid, best_tuned_clf.predict(X_valid)))
-clf = AdaBoostClassifier(n_estimators=100, algorithm="SAMME", random_state=0)
+clf = AdaBoostClassifier(algorithm="SAMME", random_state=0)
 print(cross_val_score(clf, X_train, y_train, cv=7))
 clf.fit(X_train, y_train)
 print(metrics.accuracy_score(y_valid, clf.predict(X_valid)))
