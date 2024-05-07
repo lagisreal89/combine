@@ -12,6 +12,8 @@ from scipy.stats import randint
 from sklearn import preprocessing
 import re
 import numpy as np
+from sklearn.datasets import load_iris
+import pydot
 scraped_data = pd.DataFrame(nfl.import_combine_data([2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023]))
 scraped_data = scraped_data[['draft_year', 'draft_ovr', 'player_name','ht','wt','forty','bench','vertical','broad_jump']]
 draft = [] # tell whether or not someone was drafted (target value)
@@ -30,6 +32,7 @@ y = scraped_data.iloc[:,-1]
 X.dropna(inplace=True)
 y = y[y.index.isin(X.index)]
 print(y.value_counts())
+labels = ['forty','bench','vertical','broad_jump']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.2)
 clf = DecisionTreeClassifier()
@@ -64,6 +67,14 @@ random_search.fit(X_train, y_train)
 print(random_search.best_estimator_)
 best_tuned_clf = random_search.best_estimator_
 print(metrics.accuracy_score(y_valid, best_tuned_clf.predict(X_valid)))
+export_graphviz(
+     best_tuned_clf,
+     out_file='forest.dot',
+     feature_names=list(X_train),
+     class_names=labels,
+     rounded=True,
+     filled=True
+)
 clf = AdaBoostClassifier(algorithm="SAMME", random_state=0)
 print(cross_val_score(clf, X_train, y_train, cv=10))
 clf.fit(X_train, y_train)
