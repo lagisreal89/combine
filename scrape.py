@@ -15,7 +15,8 @@ import numpy as np
 from sklearn.datasets import load_iris
 import pydot
 scraped_data = pd.DataFrame(nfl.import_combine_data([2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023]))
-scraped_data = scraped_data[['draft_year', 'draft_ovr', 'player_name','ht','wt','forty','bench','vertical','broad_jump']]
+print(scraped_data)
+scraped_data = scraped_data[['draft_year', 'draft_ovr', 'player_name','ht','wt','forty','bench','vertical','broad_jump','cone','shuttle']]
 draft = [] # tell whether or not someone was drafted (target value)
 print(scraped_data)
 for row in scraped_data.itertuples(index=True):
@@ -27,12 +28,11 @@ for row in range(len(scraped_data['ht'])):
      height_str = scraped_data['ht'].get(row)
 scraped_data['drafted'] = draft
 print(scraped_data)
-X = scraped_data.iloc[:,5:9]
+X = scraped_data.iloc[:,5:11]
 y = scraped_data.iloc[:,-1]
 X.dropna(inplace=True)
 y = y[y.index.isin(X.index)]
 print(y.value_counts())
-labels = ['forty','bench','vertical','broad_jump']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.2)
 clf = DecisionTreeClassifier()
@@ -69,20 +69,20 @@ best_tuned_clf = random_search.best_estimator_
 print(metrics.accuracy_score(y_valid, best_tuned_clf.predict(X_valid)))
 export_graphviz(
      best_tuned_clf,
-     out_file='forest.dot',
+     out_file='decisiontree.dot',
      feature_names=list(X_train),
-     class_names=labels,
      rounded=True,
      filled=True
 )
+# start of adaboost code
 clf = AdaBoostClassifier(algorithm="SAMME", random_state=0)
 print(cross_val_score(clf, X_train, y_train, cv=10))
 clf.fit(X_train, y_train)
 print(metrics.accuracy_score(y_valid, clf.predict(X_valid)))
 params_dist = {
-     'algorithm' : ['SAMME','SAMME.R'],
+     'algorithm' : ['SAMME'],
      'n_estimators' : randint(low=1, high=100),
-     'learning_rate': randint(low=1,high=100)
+     'learning_rate': randint(low=1,high=25)
 }
 clf_tuned = AdaBoostClassifier(random_state = 42)
 random_search = RandomizedSearchCV(clf_tuned, params_dist, cv=7)
@@ -90,6 +90,14 @@ random_search.fit(X_train, y_train)
 print(random_search.best_estimator_)
 best_tuned_clf = random_search.best_estimator_
 print(metrics.accuracy_score(y_valid, best_tuned_clf.predict(X_valid)))
+export_graphviz(
+     best_tuned_clf.estimators_[0],
+     out_file='adaboosttree.dot',
+     feature_names=list(X_train),
+     rounded=True,
+     filled=True
+)
+# randomforest booster code
 clf = RandomForestClassifier()
 print(cross_val_score(clf, X_train, y_train, cv=10))
 clf.fit(X_train, y_train)
@@ -107,3 +115,10 @@ random_search.fit(X_train, y_train)
 print(random_search.best_estimator_)
 best_tuned_clf = random_search.best_estimator_
 print(metrics.accuracy_score(y_valid, best_tuned_clf.predict(X_valid)))
+export_graphviz(
+     best_tuned_clf.estimators_[0],
+     out_file='randomforesttree.dot',
+     feature_names=list(X_train),
+     rounded=True,
+     filled=True
+)
