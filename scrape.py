@@ -15,6 +15,7 @@ import numpy as np
 from sklearn.datasets import load_iris
 import pydot
 import sklearn.svm as svm
+import matplotlib.pyplot as plt
 scraped_data = pd.DataFrame(nfl.import_combine_data([2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023]))
 print(scraped_data)
 scraped_data = scraped_data[['draft_year', 'draft_ovr', 'player_name','ht','wt','forty','bench','vertical','broad_jump','cone','shuttle']]
@@ -49,6 +50,10 @@ features = list(X)
 importances = [(features[i], values[i]) for i in range(len(features))]
 importances.sort(reverse=True, key=sortSecond)
 print(importances)
+feat_importances = pd.Series(clf.feature_importances_, index=X.columns)
+feat_importances.nlargest(6).plot(kind='barh')
+plt.savefig('decisiontree.png')
+plt.show()
 DecisionTreeClassifier(class_weight=None, criterion='gini', max_depth=None,
  max_features=None, max_leaf_nodes=None,
  min_impurity_decrease=0.0,
@@ -86,19 +91,13 @@ params_dist = {
      'max_samples':[x / 10 for x in range(1, 11)],
      'max_features':[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.85, 0.90, 0.92, 0.95, 1.0]
 }
+#bagging classifer code starts here
 clf_tuned = BaggingClassifier(random_state=42)
 random_search = RandomizedSearchCV(clf_tuned, params_dist, cv=7)
 random_search.fit(X_train, y_train)
 print(random_search.best_estimator_)
 best_tuned_clf = random_search.best_estimator_
 print(metrics.accuracy_score(y_valid, best_tuned_clf.predict(X_valid)))
-'''export_graphviz(
-     best_tuned_clf,
-     out_file='bagging.dot',
-     feature_names=list(X_train),
-     rounded=True,
-     filled=True
-)'''
 # randomforest booster code
 clf = RandomForestClassifier()
 print(cross_val_score(clf, X_train, y_train, cv=10))
