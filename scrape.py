@@ -39,21 +39,21 @@ clf = DecisionTreeClassifier()
 print(cross_val_score(clf, X_train, y_train, cv=7))
 clf.fit(X_train, y_train)
 print(metrics.accuracy_score(y_valid, clf.predict(X_valid)))
-svm_cross = svm.SVC(kernel='linear', C=1)
+'''svm_cross = svm.SVC(kernel='linear', C=1)
 print(cross_val_score(svm_cross,X_train, y_train, cv=7))
 svm_cross.fit(X_train, y_train)
-print(metrics.accuracy_score(y_valid, svm_cross.predict(X_valid)))
+print(metrics.accuracy_score(y_valid, svm_cross.predict(X_valid)))'''
 def sortSecond(val):
      return val[1]
 values = clf.feature_importances_
 features = list(X)
 importances = [(features[i], values[i]) for i in range(len(features))]
 importances.sort(reverse=True, key=sortSecond)
-print(importances)
 feat_importances = pd.Series(clf.feature_importances_, index=X.columns)
 feat_importances.nlargest(6).plot(kind='barh')
+plt.yticks(fontsize=8,weight='bold')
+plt.title('Combine Feature Importances')
 plt.savefig('decisiontree.png')
-plt.show()
 DecisionTreeClassifier(class_weight=None, criterion='gini', max_depth=None,
  max_features=None, max_leaf_nodes=None,
  min_impurity_decrease=0.0,
@@ -74,6 +74,7 @@ random_search.fit(X_train, y_train)
 print(random_search.best_estimator_)
 best_tuned_clf = random_search.best_estimator_
 print(metrics.accuracy_score(y_valid, best_tuned_clf.predict(X_valid)))
+print(metrics.classification_report(y_valid,best_tuned_clf.predict(X_valid)))
 export_graphviz(
      best_tuned_clf,
      out_file='decisiontree.dot',
@@ -81,6 +82,11 @@ export_graphviz(
      rounded=True,
      filled=True
 )
+feat_importances = pd.Series(best_tuned_clf.feature_importances_, index=X.columns)
+feat_importances.nlargest(6).plot(kind='barh')
+plt.yticks(fontsize=8,weight='bold')
+plt.title('Combine Feature Importances')
+plt.savefig('decisiontreehyper.png')
 # start of bagging code
 clf = BaggingClassifier(random_state=0)
 print(cross_val_score(clf, X_train, y_train, cv=10))
@@ -89,7 +95,9 @@ print(metrics.accuracy_score(y_valid, clf.predict(X_valid)))
 params_dist = {
      'n_estimators':randint(low=1,high=100),
      'max_samples':[x / 10 for x in range(1, 11)],
-     'max_features':[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.85, 0.90, 0.92, 0.95, 1.0]
+     'max_features':[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.85, 0.90, 0.92, 0.95, 1.0],
+     'bootstrap':[True,False],
+     'warm_start':[True,False]
 }
 #bagging classifer code starts here
 clf_tuned = BaggingClassifier(random_state=42)
@@ -98,6 +106,7 @@ random_search.fit(X_train, y_train)
 print(random_search.best_estimator_)
 best_tuned_clf = random_search.best_estimator_
 print(metrics.accuracy_score(y_valid, best_tuned_clf.predict(X_valid)))
+print(metrics.classification_report(y_valid,best_tuned_clf.predict(X_valid)))
 # randomforest booster code
 clf = RandomForestClassifier()
 print(cross_val_score(clf, X_train, y_train, cv=10))
@@ -105,10 +114,11 @@ clf.fit(X_train, y_train)
 print(metrics.accuracy_score(y_valid, clf.predict(X_valid)))
 params_dist = {
 'criterion': ['gini', 'entropy','log_loss'],
-'max_depth': randint(low=4, high=40),
+'max_depth': randint(low=2, high=40),
 'max_leaf_nodes': randint(low=1000, high=20000),
-'min_samples_leaf': randint(low=20, high=100),
-'min_samples_split': randint(low=40, high=200)
+'min_samples_leaf': randint(low=40, high=150),
+'min_samples_split': randint(low=40, high=200),
+'max_features': ['sqrt','log2', None]
 }
 clf_tuned = RandomForestClassifier(random_state=42)
 random_search = RandomizedSearchCV(clf_tuned, params_dist, cv=7)
@@ -116,6 +126,7 @@ random_search.fit(X_train, y_train)
 print(random_search.best_estimator_)
 best_tuned_clf = random_search.best_estimator_
 print(metrics.accuracy_score(y_valid, best_tuned_clf.predict(X_valid)))
+print(metrics.classification_report(y_valid,best_tuned_clf.predict(X_valid)))
 export_graphviz(
      best_tuned_clf.estimators_[0],
      out_file='randomforesttree.dot',
